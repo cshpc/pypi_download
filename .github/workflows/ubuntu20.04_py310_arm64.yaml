@@ -39,10 +39,15 @@ jobs:
                 echo "✅ Download complete, total files:" &&
                 ls -lh artifacts
             "
+      - name: Set output filename
+        id: archive
+        run: |
+          ts=$(date +'%Y-%m-%d_%H%M%S')
+          echo "result_filename=wheels_${ts}" >> $GITHUB_OUTPUT
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wheels_${{ GITHUB_SHA }}
+          name: ${{ steps.archive.outputs.result_filename }}_${{ github.sha }}
           path: artifacts/
           retention-days: 7
