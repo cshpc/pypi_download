@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-python-on-arm64:
+  download_pypi_wheels_for_arm64:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,14 +34,15 @@ jobs:
                 pip install -U pip wheel setuptools &&
                 cp packages_to_download.txt requirements.txt || touch requirements.txt &&
                 mkdir -p artifacts/ &&
-                pip download setuptools setuptools-scm wheel build Cython py-cpuinfo -d wheelhouse &&
+                pip download setuptools setuptools-scm wheel build Cython py-cpuinfo -d artifacts &&
                 pip download -r requirements.txt -d artifacts &&
                 echo "✅ Download complete, total files:" &&
-                ls -lh wheelhouse
+                ls -lh artifacts
             "
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: whl_packages_ubuntu20.04_py310_arm64
+          name: wheels_${{ GITHUB_SHA }}
           path: artifacts/
+          retention-days: 7
