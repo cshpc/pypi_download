@@ -21,7 +21,7 @@ jobs:
       - name: Set up Docker Buildx (for multi-arch builds)
         uses: docker/setup-buildx-action@v3
 
-      - name: Run Python job inside ARM64 container
+      - name: Run pip download inside ARM64 container
         run: |
           docker run --rm \
             --platform linux/arm64 \
