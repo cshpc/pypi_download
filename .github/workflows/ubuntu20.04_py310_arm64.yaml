@@ -1,0 +1,47 @@
+name: Run ARM64 Python Job
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  run-python-on-arm64:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU for ARM64 emulation
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Set up Docker Buildx (for multi-arch builds)
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run Python job inside ARM64 container
+        run: |
+          docker run --rm \
+            --platform linux/arm64 \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            ascendai/python:3.10-ubuntu20.04 \
+            bash -c "
+                python3 -m venv venv &&
+                source venv/bin/activate && 
+                pip install -U pip wheel setuptools &&
+                cp packages_to_download.txt requirements.txt || touch requirements.txt &&
+                mkdir -p artifacts/ &&
+                pip download setuptools setuptools-scm wheel build Cython py-cpuinfo -d wheelhouse &&
+                pip download -r requirements.txt -d artifacts &&
+                echo "✅ Download complete, total files:" &&
+                ls -lh wheelhouse
+            "
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: whl_packages_ubuntu20.04_py310_arm64
+          path: artifacts/
